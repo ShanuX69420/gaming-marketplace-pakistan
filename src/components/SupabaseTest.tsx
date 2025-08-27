@@ -10,23 +10,31 @@ export default function SupabaseTest() {
   useEffect(() => {
     async function testConnection() {
       try {
-        const { data, error } = await supabase
-          .from('_health_check')
-          .select('*')
+        // Direct test of profiles table (Phase 7)
+        console.log('Testing profiles table...')
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, created_at')
           .limit(1)
-
-        if (error) {
-          if (error.message.includes('relation "_health_check" does not exist')) {
-            setConnectionStatus('✅ Connected to Supabase (database empty - ready for setup)')
-          } else if (error.message.includes('Missing Supabase environment variables')) {
-            setConnectionStatus('❌ Missing environment variables')
+        
+        console.log('Profile test result:', { profileData, profileError })
+        
+        if (profileError) {
+          if (profileError.message.includes('relation "profiles" does not exist')) {
+            setConnectionStatus('✅ Connected - Ready to setup Phase 7 database schema')
+          } else if (profileError.message.includes('permission denied') || profileError.message.includes('RLS')) {
+            setConnectionStatus('✅ Connected - Profile table exists but needs RLS policy fix')
           } else {
-            setConnectionStatus(`⚠️ Connection issue: ${error.message}`)
+            console.log('Profile error details:', profileError)
+            setConnectionStatus(`⚠️ Profile table issue: ${profileError.message}`)
           }
         } else {
-          setConnectionStatus('✅ Connected to Supabase successfully')
+          // Table exists and is accessible (profileData can be empty array)
+          const profileCount = profileData?.length || 0
+          setConnectionStatus(`✅ Connected - Profile schema ready! (Phase 7 complete) - ${profileCount} profiles`)
         }
       } catch (err) {
+        console.error('Connection test error:', err)
         if (err instanceof Error && err.message.includes('Missing Supabase environment variables')) {
           setConnectionStatus('❌ Please configure Supabase environment variables in .env.local')
         } else {
@@ -76,6 +84,15 @@ export default function SupabaseTest() {
             <li>Update .env.local with your Project URL and anon key</li>
             <li>Restart the dev server</li>
           </ol>
+        </div>
+      )}
+      
+      {connectionStatus.includes('Ready to setup Phase 7') && (
+        <div className="mt-2 text-xs text-gray-600">
+          <p>📋 <strong>Next Step:</strong> Setup database schema for profiles</p>
+          <p className="mt-1">
+            See <code className="bg-gray-200 px-1 rounded">DATABASE_SETUP.md</code> for instructions
+          </p>
         </div>
       )}
     </div>

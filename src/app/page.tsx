@@ -15,13 +15,13 @@ export default function Home() {
           <div className="space-y-6">
             <div className="bg-primary-50 p-8 rounded-lg">
               <h2 className="text-2xl font-semibold text-primary-700 mb-4">
-                Phase 3: Basic Layout Complete!
+                Phase 7: User Profile Schema Complete!
               </h2>
               <p className="text-primary-600 mb-4">
-                Navigation, footer, and responsive design implemented
+                Database schema created for user profiles, metadata, and avatar uploads
               </p>
               <div className="bg-white p-4 rounded-lg">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Supabase Connection Status:</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Database Connection Status:</h3>
                 <SupabaseTest />
               </div>
             </div>
