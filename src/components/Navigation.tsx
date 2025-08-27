@@ -45,6 +45,11 @@ export default function Navigation() {
             <Link href="/sell" className="text-gray-600 hover:text-primary-600 px-3 py-2 text-sm font-medium">
               Sell
             </Link>
+            {user && (
+              <Link href="/dashboard" className="text-gray-600 hover:text-primary-600 px-3 py-2 text-sm font-medium">
+                Dashboard
+              </Link>
+            )}
             <Link href="/how-it-works" className="text-gray-600 hover:text-primary-600 px-3 py-2 text-sm font-medium">
               How It Works
             </Link>
@@ -140,6 +145,11 @@ export default function Navigation() {
             <Link href="/sell" className="block px-3 py-2 text-gray-600 hover:text-primary-600 text-base font-medium">
               Sell
             </Link>
+            {user && (
+              <Link href="/dashboard" className="block px-3 py-2 text-gray-600 hover:text-primary-600 text-base font-medium">
+                Dashboard
+              </Link>
+            )}
             <Link href="/how-it-works" className="block px-3 py-2 text-gray-600 hover:text-primary-600 text-base font-medium">
               How It Works
             </Link>
