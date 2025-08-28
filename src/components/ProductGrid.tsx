@@ -41,15 +41,31 @@ export default function ProductGrid({
         limit: pagination.limit
       }
 
+      console.log('ProductGrid: Searching with query:', query)
       const { data, error } = await ProductService.searchProducts(query)
+      console.log('ProductGrid: Search result:', { 
+        data, 
+        error, 
+        productsCount: data?.products?.length,
+        totalCount: data?.total_count,
+        firstProductTitle: data?.products?.[0]?.title 
+      })
 
       if (error) {
+        console.error('ProductGrid: Search error:', error)
         setError(error)
         return
       }
 
       if (data) {
-        setProducts(prev => append ? [...prev, ...data.products] : data.products)
+        const newProducts = append ? [...products, ...data.products] : data.products
+        console.log('ProductGrid: Setting products:', {
+          append,
+          newProductsCount: newProducts.length,
+          newProducts: newProducts.map(p => ({ id: p.id, title: p.title }))
+        })
+        
+        setProducts(newProducts)
         setPagination({
           page: data.page,
           limit: data.limit,
@@ -134,6 +150,13 @@ export default function ProductGrid({
       </div>
     )
   }
+
+  console.log('ProductGrid: Rendering with products:', {
+    productsLength: products.length,
+    loading,
+    error,
+    products: products.map(p => ({ id: p.id, title: p.title }))
+  })
 
   return (
     <div className="space-y-6">

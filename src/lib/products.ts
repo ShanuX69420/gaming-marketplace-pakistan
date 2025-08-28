@@ -121,14 +121,56 @@ export class ProductService {
   // Search products with filters
   static async searchProducts(query: ProductSearchQuery): Promise<{ data: ProductSearchResult | null; error: string | null }> {
     try {
+      console.log('ProductService: Starting search with query:', query)
+      
       let supabaseQuery = supabase
         .from('products')
         .select('*', { count: 'exact' })
         .eq('status', 'active')
 
-      // Text search
-      if (query.q) {
-        supabaseQuery = supabaseQuery.textSearch('search_vector', query.q)
+      console.log('ProductService: Base query created for active products')
+
+      // Text search - if no search term, return all products
+      if (query.q && query.q.trim()) {
+        const searchTerm = query.q.trim()
+        console.log('ProductService: Adding text search for:', searchTerm)
+        
+        // Break search term into individual words for better matching
+        const searchWords = searchTerm.toLowerCase().split(' ').filter(word => word.length > 2)
+        console.log('ProductService: Search words:', searchWords)
+        
+        if (searchWords.length > 1) {
+          // For multi-word searches, we want products that contain MOST of the words
+          // Filter out generic words that might not be in products
+          const genericWords = ['accounts', 'account', 'the', 'and', 'for', 'with']
+          const importantWords = searchWords.filter(word => !genericWords.includes(word))
+          
+          console.log('ProductService: Important words:', importantWords)
+          
+          if (importantWords.length > 0) {
+            // Search for the important words
+            const orConditions = importantWords.map(word => 
+              `title.ilike.%${word}%,description.ilike.%${word}%,game_title.ilike.%${word}%`
+            ).join(',')
+            
+            supabaseQuery = supabaseQuery.or(orConditions)
+            console.log('ProductService: Important words search applied')
+          } else {
+            // If only generic words, search for the first meaningful word
+            const firstWord = searchWords[0]
+            supabaseQuery = supabaseQuery.or(
+              `title.ilike.%${firstWord}%,description.ilike.%${firstWord}%,game_title.ilike.%${firstWord}%`
+            )
+            console.log('ProductService: First word search applied')
+          }
+        } else {
+          // Single word search
+          const word = searchWords[0] || searchTerm
+          supabaseQuery = supabaseQuery.or(
+            `title.ilike.%${word}%,description.ilike.%${word}%,game_title.ilike.%${word}%`
+          )
+          console.log('ProductService: Single word search applied')
+        }
       }
 
       // Category filter
@@ -198,9 +240,17 @@ export class ProductService {
 
       supabaseQuery = supabaseQuery.range(offset, offset + limit - 1)
 
+      console.log('ProductService: About to execute final query')
       const { data, error, count } = await supabaseQuery
+      console.log('ProductService: Query executed. Results:', { 
+        dataCount: data?.length || 0, 
+        totalCount: count, 
+        error: error?.message,
+        firstProduct: data?.[0]?.title 
+      })
 
       if (error) {
+        console.error('ProductService: Database error:', error)
         return { data: null, error: error.message }
       }
 

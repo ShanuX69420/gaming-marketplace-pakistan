@@ -8,7 +8,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   children: React.ReactNode
 }
 
-export default function Select({ 
+export function Select({ 
   label, 
   error, 
   className, 
@@ -40,3 +40,5 @@ export default function Select({
     </div>
   )
 }
+
+export default Select

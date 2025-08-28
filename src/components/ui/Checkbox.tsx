@@ -7,7 +7,7 @@ interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   description?: string
 }
 
-export default function Checkbox({ 
+export function Checkbox({ 
   label, 
   description,
   className, 
@@ -39,3 +39,5 @@ export default function Checkbox({
     </div>
   )
 }
+
+export default Checkbox
