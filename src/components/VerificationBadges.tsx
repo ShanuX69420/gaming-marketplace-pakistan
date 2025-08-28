@@ -1,33 +1,46 @@
 import { Profile } from '@/types/profile'
 
 interface VerificationBadgesProps {
+  emailVerified?: boolean
+  phoneVerified?: boolean
+  identityVerified?: boolean
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  layout?: 'horizontal' | 'vertical'
+}
+
+// Legacy interface for backward compatibility
+interface VerificationBadgesLegacyProps {
   profile: Profile
   size?: 'sm' | 'md' | 'lg'
   layout?: 'horizontal' | 'vertical'
 }
 
 export default function VerificationBadges({ 
-  profile, 
+  emailVerified = false,
+  phoneVerified = false,
+  identityVerified = false,
   size = 'md', 
   layout = 'horizontal' 
 }: VerificationBadgesProps) {
   const badges = []
   
-  if (profile.email_verified) badges.push('Email')
-  if (profile.phone_verified) badges.push('Phone')
-  if (profile.identity_verified) badges.push('Identity')
+  if (emailVerified) badges.push('Email')
+  if (phoneVerified) badges.push('Phone')
+  if (identityVerified) badges.push('Identity')
 
   if (badges.length === 0) {
     return null
   }
 
   const sizeClasses = {
+    xs: 'text-xs px-1 py-0.5',
     sm: 'text-xs px-2 py-1',
     md: 'text-xs px-3 py-1',
     lg: 'text-sm px-3 py-1.5'
   }
 
   const iconSizes = {
+    xs: 'w-2.5 h-2.5',
     sm: 'w-3 h-3',
     md: 'w-3 h-3',
     lg: 'w-4 h-4'
@@ -59,6 +72,25 @@ export default function VerificationBadges({
         </span>
       ))}
     </div>
+  )
+}
+
+// Legacy wrapper for backward compatibility
+export function VerificationBadgesLegacy({ 
+  profile, 
+  size = 'md', 
+  layout = 'horizontal' 
+}: VerificationBadgesLegacyProps) {
+  if (!profile) return null
+  
+  return (
+    <VerificationBadges
+      emailVerified={profile.email_verified}
+      phoneVerified={profile.phone_verified}
+      identityVerified={profile.identity_verified}
+      size={size}
+      layout={layout}
+    />
   )
 }
 

@@ -84,7 +84,56 @@ export class StorageService {
     return data.publicUrl
   }
 
-  // Upload product image (for future use)
+  // Upload product images
+  static async uploadProductImages(files: File[], userId: string): Promise<{ data: string[]; error: string | null }> {
+    try {
+      if (files.length === 0) {
+        return { data: [], error: null }
+      }
+
+      // Validate all files first
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) {
+          return { data: [], error: 'Please upload only image files' }
+        }
+
+        const maxSize = 5 * 1024 * 1024 // 5MB per image
+        if (file.size > maxSize) {
+          return { data: [], error: 'Each image must be less than 5MB' }
+        }
+      }
+
+      const uploadPromises = files.map(async (file, index) => {
+        const fileExt = file.name.split('.').pop()
+        const timestamp = Date.now()
+        const fileName = `${userId}/${timestamp}-${index}.${fileExt}`
+
+        const { data, error } = await supabase.storage
+          .from('products')
+          .upload(fileName, file, {
+            cacheControl: '3600'
+          })
+
+        if (error) {
+          throw new Error(error.message)
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('products')
+          .getPublicUrl(fileName)
+
+        return publicUrlData.publicUrl
+      })
+
+      const uploadedUrls = await Promise.all(uploadPromises)
+      return { data: uploadedUrls, error: null }
+
+    } catch (error: any) {
+      return { data: [], error: error.message || 'Failed to upload product images' }
+    }
+  }
+
+  // Upload product image (single)
   static async uploadProductImage(file: File, userId: string, productId: string): Promise<{ data: string | null; error: string | null }> {
     try {
       if (!file.type.startsWith('image/')) {

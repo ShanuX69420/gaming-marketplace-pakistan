@@ -50,7 +50,7 @@ export class ProductService {
     }
   }
 
-  // Get product with seller information
+  // Get product with seller information by ID
   static async getProductWithSeller(productId: string): Promise<{ data: ProductWithSeller | null; error: string | null }> {
     try {
       const { data, error } = await supabase
@@ -66,10 +66,45 @@ export class ProductService {
             total_sales,
             email_verified,
             phone_verified,
-            identity_verified
+            identity_verified,
+            created_at
           )
         `)
         .eq('id', productId)
+        .eq('status', 'active')
+        .single()
+
+      if (error) {
+        return { data: null, error: error.message }
+      }
+
+      return { data, error: null }
+    } catch (error) {
+      return { data: null, error: 'Failed to fetch product with seller' }
+    }
+  }
+
+  // Get product with seller information by slug
+  static async getProductWithSellerBySlug(slug: string): Promise<{ data: ProductWithSeller | null; error: string | null }> {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          seller:profiles!seller_id (
+            id,
+            username,
+            full_name,
+            avatar_url,
+            seller_rating,
+            total_sales,
+            email_verified,
+            phone_verified,
+            identity_verified,
+            created_at
+          )
+        `)
+        .eq('slug', slug)
         .eq('status', 'active')
         .single()
 

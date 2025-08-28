@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ProfileService } from '@/lib/profiles'
 import { Profile } from '@/types/profile'
 import { Card } from '@/components/ui/Card'
@@ -10,13 +10,29 @@ import DashboardSidebar from '@/components/DashboardSidebar'
 
 export default function DashboardPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   useEffect(() => {
     fetchProfile()
-  }, [])
+    
+    // Check for success message in URL params
+    const message = searchParams.get('message')
+    if (message) {
+      setSuccessMessage(message)
+      
+      // Clear the success message after 5 seconds
+      setTimeout(() => setSuccessMessage(null), 5000)
+      
+      // Remove the message from URL without page reload
+      const url = new URL(window.location.href)
+      url.searchParams.delete('message')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [searchParams])
 
   const fetchProfile = async () => {
     try {
@@ -118,6 +134,38 @@ export default function DashboardPage() {
 
           {/* Dashboard content */}
           <div className="px-4 sm:px-6 lg:px-8 py-8">
+            {/* Success Message */}
+            {successMessage && (
+              <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-emerald-800">
+                      {successMessage}
+                    </p>
+                  </div>
+                  <div className="ml-auto pl-3">
+                    <div className="-mx-1.5 -my-1.5">
+                      <button
+                        type="button"
+                        className="inline-flex bg-emerald-50 rounded-md p-1.5 text-emerald-500 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-emerald-50 focus:ring-emerald-600"
+                        onClick={() => setSuccessMessage(null)}
+                      >
+                        <span className="sr-only">Dismiss</span>
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Welcome section */}
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-gray-900">
